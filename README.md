@@ -499,7 +499,7 @@ FROM order_items_dataset oid LEFT JOIN product_cln pd ON oid.product_id=pd.produ
 -- it would be difficult to say that a certain product_id has a price that is an outlier since prices vary a lot depending on the product being sold
 -- The extremes however, fall on home_and_living (6735 BRL) and contruction tools (0.85 BRL)
 ```
-## V. Data Wrangling (Overall)
+## VI. Data Wrangling (Overall)
 
 ### A. Summary of count of customers to each Brazilian state
 ``` sql
@@ -570,7 +570,7 @@ LIMIT 3;
 -- From our results: Top 1: '4869f7a5dfa277a7dca6462dcf3b52b2', Top 2: '53243585a1d6dc2643021fd1853d8905' Top 3: '4a3ca9315b744ce9f8e9374361493884'
 -- Let's focus on these sellers only and perform our analysis
 ```
-## VI. Data Wrangling (Per Supplier)
+## VII. Data Wrangling (Per Supplier)
 ``` sql
 -- Create view for analysis: 
 CREATE VIEW vw AS SELECT oc.order_id, osc.customer_id, oc.seller_id, oc.product_id, oc.new_category, oc.price, osc.order_status,osc.order_delivered_customer_date,bsa.state
@@ -843,7 +843,7 @@ GROUP BY year(order_purchase_timestamp))y
 WHERE x.year=y.year AND x.order_status='all_orders' AND y.order_status='delivered'
 ORDER BY x.year;
 ``` 
-### E. Annual Growth Rate
+### F. Annual Growth Rate
 
 ``` sql
 -- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
@@ -871,6 +871,6 @@ WHERE seller_id = '4a3ca9315b744ce9f8e9374361493884'
 GROUP BY YEAR(order_delivered_customer_date)) x;
 
 ``` 
-## VII. Data Visualization and Findings
+## VIII. Data Visualization and Findings
 
 Please check the Power BI Dashboard (on top of this report)
