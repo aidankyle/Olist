@@ -223,7 +223,7 @@ FROM brazil_states_abbrev;
 DROP TABLE brazil_states_abbrev;
 ALTER TABLE brazil_states_abbrev2 RENAME brazil_states_abbrev;
 ```
-## IV. Data Cleaning
+## V. Data Cleaning
 
 ### A. Customers Dataset
 
