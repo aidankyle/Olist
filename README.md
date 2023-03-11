@@ -450,7 +450,7 @@ UPDATE order_status_cln
 SET order_delivered_customer_date = order_estimated_delivery_date
 WHERE order_status = 'delivered' AND order_delivered_customer_date IS NULL;
 ```
-### C. Orders Dataset
+### D. Orders Dataset
 
 1. Check for Duplicate Values and Explain
 
@@ -586,7 +586,7 @@ FROM orders_cln oc LEFT JOIN order_status_cln osc ON oc.order_id=osc.order_id
 INNER JOIN customers_dataset cd ON osc.customer_id=cd.customer_id
 INNER JOIN brazil_states_abbrev bsa ON cd.customer_state=bsa.state_abbrev;
 ```
-### A. Sales per category per month for each Supplier 
+### A. Sales per category per month 
 ``` sql
 -- S1 '4869f7a5dfa277a7dca6462dcf3b52b2':
 -- categnumber was added for Power BI sorting
@@ -639,10 +639,238 @@ WHERE seller_id = '4a3ca9315b744ce9f8e9374361493884') x
 GROUP BY month,monthnumber,year,category
 ORDER BY 3,1,5;
 ```
+### B. Sales per location
 
+``` sql
+-- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
+SELECT year, state,SUM(price) as revenue
+FROM (
+SELECT year(order_delivered_customer_date) AS year, state,price
+FROM vw
+WHERE seller_id = '4869f7a5dfa277a7dca6462dcf3b52b2') x
+GROUP BY year,state
+ORDER BY 1,2;
 
+-- S2 '53243585a1d6dc2643021fd1853d8905'
+SELECT year, state,SUM(price) as revenue
+FROM (
+SELECT year(order_delivered_customer_date) AS year, state,price
+FROM vw
+WHERE seller_id = '53243585a1d6dc2643021fd1853d8905') x
+GROUP BY year,state
+ORDER BY 1,3;
 
+-- S3 '4a3ca9315b744ce9f8e9374361493884'
+SELECT year, state,SUM(price) as revenue
+FROM (
+SELECT year(order_delivered_customer_date) AS year, state,price
+FROM vw
+WHERE seller_id = '4a3ca9315b744ce9f8e9374361493884') x
+GROUP BY year,state
+ORDER BY 1,3 DESC;
+```
+### C. New Customers and Returning Customers
 
+``` sql
+-- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
 
+SELECT 2018 AS year, COUNT(*)  as new_customers_2018
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND YEAR(order_delivered_customer_date)=2018
+EXCEPT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND YEAR(order_delivered_customer_date)=2017) x;
 
+SELECT 2018 as year, COUNT(*)  as RETURNING_CUSTOMER
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND YEAR(order_delivered_customer_date)=2018
+INTERSECT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND YEAR(order_delivered_customer_date)=2017) x;
 
+-- S2 '53243585a1d6dc2643021fd1853d8905'
+
+SELECT 2018 AS year, COUNT(*)  as new_customers_2018
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND YEAR(order_delivered_customer_date)=2018
+EXCEPT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND YEAR(order_delivered_customer_date)=2017) x;
+
+SELECT 2018 as year, COUNT(*)  as RETURNING_CUSTOMER
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND YEAR(order_delivered_customer_date)=2018
+INTERSECT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND YEAR(order_delivered_customer_date)=2017) x;
+
+-- S3 '4a3ca9315b744ce9f8e9374361493884'
+
+SELECT 2018 AS year, COUNT(*)  as new_customers_2018
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND YEAR(order_delivered_customer_date)=2018
+EXCEPT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND YEAR(order_delivered_customer_date)=2017) x;
+
+SELECT 2018 as year, COUNT(*)  as RETURNING_CUSTOMER
+FROM(
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND YEAR(order_delivered_customer_date)=2018
+INTERSECT
+SELECT DISTINCT customer_id
+FROM vw
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND YEAR(order_delivered_customer_date)=2017) x;
+```
+
+### D. Product Rankings and Sales volume per product
+
+``` sql
+-- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
+
+SELECT year, product_id, new_category as category, units_sold, total_revenue, DENSE_RANK() OVER (PARTITION BY year ORDER BY total_revenue DESC) AS product_ranking
+FROM (SELECT year(order_delivered_customer_date) AS year, product_id, new_category, COUNT(order_id) as units_sold, SUM(price) as total_revenue
+FROM vw
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' 
+GROUP BY year,product_id,new_category
+ORDER BY 3 DESC) x;
+
+-- S2 '53243585a1d6dc2643021fd1853d8905'
+
+SELECT year, product_id, new_category as category, units_sold, total_revenue, DENSE_RANK() OVER (PARTITION BY year ORDER BY total_revenue DESC) AS product_ranking
+FROM (SELECT year(order_delivered_customer_date) AS year, product_id, new_category, COUNT(order_id) as units_sold, SUM(price) as total_revenue
+FROM vw
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905'
+GROUP BY year,product_id,new_category
+ORDER BY 3 DESC) x;
+
+-- S3 '4a3ca9315b744ce9f8e9374361493884'
+
+SELECT year, product_id, new_category as category, units_sold, total_revenue, DENSE_RANK() OVER (PARTITION BY year ORDER BY total_revenue DESC) AS product_ranking
+FROM (SELECT year(order_delivered_customer_date) AS year, product_id, new_category, COUNT(order_id) as units_sold, SUM(price) as total_revenue
+FROM vw
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884'
+GROUP BY year,product_id,new_category
+ORDER BY 3 DESC) x;
+
+```
+
+### E. Percent completed orders
+
+``` sql
+-- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
+SELECT x.year,y.order_status, y.total_orders,x.order_status, x.total_orders,y.total_orders/x.total_orders AS sales_orders_ratio
+FROM (SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' 
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))x CROSS JOIN
+(SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' 
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4869f7a5dfa277a7dca6462dcf3b52b2' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))y
+WHERE x.year=y.year AND x.order_status='all_orders' AND y.order_status='delivered'
+ORDER BY x.year;
+
+-- S2 '53243585a1d6dc2643021fd1853d8905'
+SELECT x.year,y.order_status, y.total_orders,x.order_status, x.total_orders,y.total_orders/x.total_orders AS sales_orders_ratio
+FROM (SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905'
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))x CROSS JOIN
+(SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905'
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='53243585a1d6dc2643021fd1853d8905' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))y
+WHERE x.year=y.year AND x.order_status='all_orders' AND y.order_status='delivered'
+ORDER BY x.year;
+
+-- S3 '4a3ca9315b744ce9f8e9374361493884'
+SELECT x.year,y.order_status, y.total_orders,x.order_status, x.total_orders,y.total_orders/x.total_orders AS sales_orders_ratio
+FROM (SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884'
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))x CROSS JOIN
+(SELECT year(order_purchase_timestamp) AS year, 'all_orders' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884'
+GROUP BY year(order_purchase_timestamp)
+UNION ALL 
+SELECT year(order_purchase_timestamp) AS year, 'delivered' as order_status, COUNT(DISTINCT order_id) AS total_orders
+FROM vw2
+WHERE seller_id='4a3ca9315b744ce9f8e9374361493884' AND order_status = 'delivered' 
+GROUP BY year(order_purchase_timestamp))y
+WHERE x.year=y.year AND x.order_status='all_orders' AND y.order_status='delivered'
+ORDER BY x.year;
+``` 
+### E. Annual Growth Rate
+
+``` sql
+-- S1 '4869f7a5dfa277a7dca6462dcf3b52b2' 
+SELECT Year, Sales, LAG(Sales) OVER (ORDER BY Year) as lag_sales,
+COALESCE((Sales-LAG(Sales) OVER (ORDER BY Year))/LAG(Sales) OVER (ORDER BY Year),"") AS Growth_Rate
+FROM (SELECT YEAR(order_delivered_customer_date) AS Year, SUM(price) as Sales
+FROM vw
+WHERE seller_id = '4869f7a5dfa277a7dca6462dcf3b52b2' 
+GROUP BY YEAR(order_delivered_customer_date)) x;
+
+-- S2 '53243585a1d6dc2643021fd1853d8905'
+SELECT Year, Sales, LAG(Sales) OVER (ORDER BY Year) as lag_sales,
+COALESCE((Sales-LAG(Sales) OVER (ORDER BY Year))/LAG(Sales) OVER (ORDER BY Year),"") AS Growth_Rate
+FROM (SELECT YEAR(order_delivered_customer_date) AS Year, SUM(price) as Sales
+FROM vw
+WHERE seller_id = '53243585a1d6dc2643021fd1853d8905'
+GROUP BY YEAR(order_delivered_customer_date)) x;
+
+-- S3 '4a3ca9315b744ce9f8e9374361493884'
+SELECT Year, Sales, LAG(Sales) OVER (ORDER BY Year) as lag_sales,
+COALESCE((Sales-LAG(Sales) OVER (ORDER BY Year))/LAG(Sales) OVER (ORDER BY Year),"") AS Growth_Rate
+FROM (SELECT YEAR(order_delivered_customer_date) AS Year, SUM(price) as Sales
+FROM vw
+WHERE seller_id = '4a3ca9315b744ce9f8e9374361493884'
+GROUP BY YEAR(order_delivered_customer_date)) x;
+
+``` 
+## VII. Data Visualization and Findings
+
+Please check the Power BI Dashboard (on top of this report)
