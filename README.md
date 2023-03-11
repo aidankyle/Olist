@@ -32,6 +32,25 @@ Here are some of the limitations that were discovered when analyzing the files :
 1. Incomplete details for financial analysis such as Cost of Goods Sold (COGS) and Tax - Profit, Gross Margin Revenue, and Gross income would have been analyzed as well if COGS wasn't missing. What is left is just an analysis of total revenue made per product by every seller
 2. Inventory details were also not included. Analysis could also be done on inventory turnover, out of stock rate and carrying cost of inventory 
 
+## III. The Ask
+
+From the dataset, here are the things that can be explored: 
+
+1. Overall
+- Number of products per category
+- Customer count per Brazilian state
+- Top Sellers
+- Delivered vs Canceled orders 
+
+2. Per Seller
+- New and Returning customers
+- Completed orders
+- Annual sales growth rate
+- Sales per Month
+- Sales per Category
+- Sales per State
+- Product Performance (Units sold, Total Sales, and Rank)
+
 
 
 
