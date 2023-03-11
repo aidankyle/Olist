@@ -26,6 +26,11 @@ Out of these 8 files, three of them were not explored further:
 2. Payments - Orders used multiple payment types and it is not necessary in evaluating the sales performance for the three sellers. The amount for every order was already included in the order items list so price was based on that file. 
 3. Order reviews - This could have been explored further but not all orders have reviews.
 
+### Limitations
+
+Here are some of the limitations that were discovered when analyzing the files : 
+1. Incomplete details for financial analysis such as Cost of Goods Sold (COGS) and Tax - Profit, Gross Margin Revenue, and Gross income would have been analyzed as well if COGS wasn't missing. What is left is just an analysis of total revenue made per product by every seller
+2. Inventory details were also not included. Analysis could also be done on inventory turnover, out of stock rate and carrying cost of inventory 
 
 
 
