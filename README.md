@@ -51,7 +51,7 @@ From the dataset, here are the things that can be explored:
 - Sales per State
 - Product Performance (Units sold, Total Sales, and Rank)
 
-
+## IV. Data Import and Data Cleaning
 
 
 
